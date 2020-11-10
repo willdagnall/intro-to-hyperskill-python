@@ -1,3 +1,4 @@
+import random
 import sqlite3
 conn = sqlite3.connect('card.s3db')
 
@@ -10,28 +11,23 @@ cur.execute("CREATE TABLE IF NOT EXISTS  card("
             ")")
 conn.commit()
 
-
-import random
-
-#account_details = {}
-
-
 def write():
-    print(r'''1. Create an account
-2. Log into account
-0. Exit''')
-    n = int(input())
+    print("1. Create an account")
+    print("2. Log into account")
+    print("0. Exit")
+
+    menu_var = int(input())
     print()
-    if n == 1:
+    if menu_var == 1:
         createAccount()
-    elif n == 2:
+    elif menu_var == 2:
         logAccount()
-    elif n == 0:
+    elif menu_var == 0:
         print()
         print("Bye!")
         exit()
 
-def check(cards):
+def luhn_algorithm(cards):
     card = str(cards)
     n = 0
     no = card[:15]
@@ -53,43 +49,42 @@ def check(cards):
 
 def createAccount():
     i_d = 0
-    card_no = "400000" + str(random.randint(100000000, 999999999))
-    card_nos = card_no
+    card_number = "400000" + str(random.randint(100000000, 999999999))
+    card_numbers = card_number
     #print(card_nos)
     checksum = 0
-    for i in range(len(card_no)):
+    for i in range(len(card_number)):
         if i%2 == 0:
-            value = int(card_no[i]) * 2
+            value = int(card_number[i]) * 2
             if value > 9:
                 value -= 9
-            card_no = card_no[:i] + str(value) + card_no[i+1:]
-    for i in range(len(card_no)):
-        checksum += int(card_no[i])
+            card_number = card_number[:i] + str(value) + card_number[i+1:]
+    for i in range(len(card_number)):
+        checksum += int(card_number[i])
     if checksum % 10 != 0:
-        card_nos = int(card_nos + str(10 - (checksum%10)))
+        card_numbers = int(card_numbers + str(10 - (checksum%10)))
     else:
-        card_nos = int(card_nos + '0')
+        card_numbers = int(card_numbers + '0')
     card_pin = random.randint(1000, 9999)
-    details = (i_d, card_nos, card_pin)
+    details = (i_d, card_numbers, card_pin)
     cur.execute("INSERT INTO card(id, number, pin) "
                 "VALUES (?, ?, ?)", details)
     conn.commit()
     i_d += 1
-    print(f"""Your card has been created
-Your card number:
-{card_nos}
-Your card PIN:
-{card_pin}
-""")
+    print("Your card has been created")
+    print("Your card number:")
+    print(f"{card_numbers}")
+    print("Your card PIN:")
+    print(f"{card_pin}")
 
 
 def logAccount():
     print("Enter your card number:")
-    no = int(input())
-    nos = (no, )
+    number = int(input())
+    numbers = (number, )
     print("Enter your PIN:")
     Pin = int(input())
-    cur.execute("SELECT pin FROM card WHERE number = ?", nos)
+    cur.execute("SELECT pin FROM card WHERE number = ?", numbers)
     try:
         pins = list(cur.fetchone())
         pin = int(pins[0])
@@ -100,7 +95,7 @@ def logAccount():
         if Pin == pin:
             print("You have successfully logged in!")
             print()
-            account_info(nos)
+            account_info(numbers)
         else:
             print("Wrong card number or PIN!")
             print()
@@ -110,12 +105,13 @@ def logAccount():
 
 
 def account_info(cn):
-    print('''1. Balance
-2. Add income
-3. Do transfer
-4. Close account
-5. Log out
-0. Exit''')
+    print("1. Balance")
+    print("2. Add income")
+    print("3. Do transfer")
+    print("4. Close account")
+    print("5. Log out")
+    print("0. Exit")
+
     a = int(input())
     print()
     if a == 1:
@@ -149,7 +145,7 @@ def account_info(cn):
         bal_s = bals[0]
         nos = list(cn)
         no = nos[0]
-        if check(trans):
+        if luhn_algorithm(trans):
             Trans = (trans, )
             cur.execute("SELECT balance FROM card WHERE number=?", Trans)
             try:
